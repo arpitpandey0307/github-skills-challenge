@@ -121,11 +121,9 @@ two anomaly events:
 | `2026-09-20T10:06:00` | `ERROR`: Database connection timeout | `640 ms`, CPU `94%`, memory `91%` | High response time; high CPU utilization; high memory utilization |
 
 The remaining eight observations are treated as normal, and no normal event is
-incorrectly flagged by the configured metric thresholds. The two timeout records are
-still concerning log events, but both `ERROR` log levels are absent from the reported
-reasons because the detector currently adds a log reason only for `WARNING`. This is
-an expected anomaly that the current implementation misses at the log-classification
-level.
+incorrectly flagged by the configured metric or log-level checks. After the Task 5
+correction, both timeout records include `Error log detected` in their reported
+reasons.
 
 The pipeline publishes the detected events to the `service-events` topic, and the
 consumer reads those same events from that topic. The verified run therefore reports
@@ -171,6 +169,46 @@ Events consumed: 2
 
 The final output represents the payment-service issues at `10:05` and `10:06`,
 including the elevated response time, resource utilization, and concerning error logs.
+
+### Reproduce the Demonstration
+
+From the repository root, use Python 3.13 or a compatible Python 3 version:
+
+1. Create and activate a virtual environment:
+
+	```bash
+	python -m venv .venv/aiops
+	source .venv/aiops/bin/activate
+	```
+
+2. Install the project and test dependencies:
+
+	```bash
+	python -m pip install --upgrade pip
+	python -m pip install -r requirements.txt
+	python -m pip install pytest==8.4.1 coverage pytest-cov
+	```
+
+3. Run the complete test suite:
+
+	```bash
+	python -m pytest -q
+	```
+
+4. Execute the end-to-end AIOps pipeline. The `PYTHONPATH` setting is required by
+	the existing sibling-module imports in `src/aiops_pipeline.py`:
+
+	```bash
+	PYTHONPATH=src python src/aiops_pipeline.py
+	```
+
+5. Confirm the expected result: 10 records processed, 2 anomalies detected, and 2
+	events consumed. The anomaly timestamps should be `10:05` and `10:06`, with the
+	response-time, CPU, memory, and `Error log detected` reasons shown above.
+
+The corrections made during the assessment are preserved in the existing architecture:
+the producer and consumer share the `service-events` topic, and the detector treats
+both `ERROR` and `WARNING` as concerning log levels.
 
 
 ---
