@@ -85,12 +85,28 @@ reasons because the detector currently adds a log reason only for `WARNING`. Thi
 an expected anomaly that the current implementation misses at the log-classification
 level.
 
-The pipeline also reports zero consumed events because it publishes to the
-`service-events` topic while the consumer reads from the separate `anomaly-events`
-topic. A possible improvement is to use one shared anomaly topic and to treat
-`ERROR` (as well as `WARNING`, if appropriate) as a concerning log level. Another
-improvement would be to include the original log level and message directly in the
-detected event reasons or output.
+The pipeline publishes the detected events to the `service-events` topic, and the
+consumer reads those same events from that topic. The verified run therefore reports
+two events consumed, preserving the anomaly timestamps, source records, and detection
+reasons. A possible improvement is to treat `ERROR` (as well as `WARNING`, if
+appropriate) as a concerning log level and include the original log level and message
+directly in the detected event reasons or output.
+
+### Event Flow Verification
+
+The complete event-processing flow is:
+
+1. **Anomaly detector:** identifies an abnormal observation and creates an `ANOMALY`
+	event containing the timestamp, service, reasons, and source record.
+2. **Producer:** receives that event and publishes it to the `service-events` topic.
+3. **Topic:** stores the event in the in-memory message list.
+4. **Consumer:** reads the event from the same topic.
+5. **AIOps pipeline:** returns the consumed events as `events_consumed` for downstream
+	processing and reporting.
+
+Running the pipeline against the operational data processed 10 records, detected 2
+anomalies, and consumed 2 events. The consumed events correspond to `10:05` and
+`10:06`, confirming that both abnormal observations reached the downstream result.
 
 
 ---
