@@ -11,6 +11,31 @@ Make sure your work is committed and pushed to your repository before submission
 
 Good luck!
 
+## Task Results
+
+### Task 1: Continuous Integration
+
+**Result:** Python test and coverage workflows were added under
+`.github/workflows/`. The tests run successfully on `main`; the initial coverage
+report showed 58% coverage and identified opportunities for additional tests.
+
+### Task 2: Analyse Logs and Metrics
+
+**Result:** The operational data was reviewed and documented below. Metrics are
+response time, CPU, and memory; log information is the log level and message; normal
+records occur before `10:05` and after `10:06`, while the timeout records are unusual.
+
+### Task 3: Identify Anomalies
+
+**Result:** The detector processed 10 records and identified anomalies at `10:05` and
+`10:06`, including the corresponding abnormal metric values and timeout log messages.
+
+### Task 4: Verify the AIOps Event Flow
+
+**Result:** The producer published the two detected anomaly events to the shared
+`service-events` topic, the consumer received both events, and the downstream AIOps
+pipeline returned them in `events_consumed`.
+
 ## AIOps Assessment
 
 This repository monitors a synthetic `payment-service`. The service processes payment
