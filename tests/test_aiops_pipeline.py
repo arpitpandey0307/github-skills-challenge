@@ -40,6 +40,26 @@ def test_anomalous_record_is_detected():
 
     assert event is not None
     assert event["type"] == "ANOMALY"
+    assert "Error log detected" in event["reasons"]
+
+
+def test_warning_log_is_detected():
+    detector = AnomalyDetector()
+
+    record = {
+        "timestamp": "2026-09-20T10:05:00",
+        "service": "payment-service",
+        "response_time_ms": 120,
+        "cpu_percent": 42,
+        "memory_percent": 51,
+        "log_level": "WARNING",
+        "message": "Payment request needs attention"
+    }
+
+    event = detector.detect(record)
+
+    assert event is not None
+    assert event["reasons"] == ["Error log detected"]
 
 
 def test_producer_publishes_event():

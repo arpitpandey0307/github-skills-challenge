@@ -36,6 +36,16 @@ records occur before `10:05` and after `10:06`, while the timeout records are un
 `service-events` topic, the consumer received both events, and the downstream AIOps
 pipeline returned them in `events_consumed`.
 
+### Task 5: Investigate and Correct the Workflow
+
+**Result:** The anomaly detector was the affected component. It checked only for
+`WARNING` logs, so the dataset's `ERROR` timeout records were detected by metrics but
+their concerning log information was omitted. The detector now recognizes both
+`ERROR` and `WARNING` log levels as `Error log detected`. The pipeline was rerun and
+reported 10 records processed, 2 anomalies detected, 2 events consumed, and the log
+reason on both anomaly events. The shared-topic correction from Task 4 remains in
+place, so the complete event flow continues to work.
+
 ## AIOps Assessment
 
 This repository monitors a synthetic `payment-service`. The service processes payment
@@ -113,9 +123,9 @@ level.
 The pipeline publishes the detected events to the `service-events` topic, and the
 consumer reads those same events from that topic. The verified run therefore reports
 two events consumed, preserving the anomaly timestamps, source records, and detection
-reasons. A possible improvement is to treat `ERROR` (as well as `WARNING`, if
-appropriate) as a concerning log level and include the original log level and message
-directly in the detected event reasons or output.
+reasons, including the concerning `ERROR` log reason after the Task 5 correction. A
+possible improvement is to include the original log level and message directly in the
+detected event reasons or output.
 
 ### Event Flow Verification
 
