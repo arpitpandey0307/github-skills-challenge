@@ -1,4 +1,7 @@
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
+import runpy
 
 from src.anomaly_detector import AnomalyDetector
 from src.aiops_pipeline import run_pipeline
@@ -75,6 +78,14 @@ def test_producer_publishes_event():
     assert len(topic.get_messages()) == 1
 
 
+def test_producer_rejects_empty_event():
+    topic = EventTopic("anomaly-events")
+    producer = EventProducer(topic)
+
+    assert producer.publish(None) is False
+    assert topic.get_messages() == []
+
+
 def test_consumer_receives_event():
     topic = EventTopic("anomaly-events")
     producer = EventProducer(topic)
@@ -92,6 +103,15 @@ def test_consumer_receives_event():
     assert len(messages) == 1
 
 
+def test_topic_clear_removes_messages():
+    topic = EventTopic("anomaly-events")
+    topic.publish({"type": "ANOMALY"})
+
+    topic.clear()
+
+    assert topic.get_messages() == []
+
+
 def test_pipeline_delivers_anomalies_to_consumer():
     result = run_pipeline(Path("data/service_data.json"))
 
@@ -102,3 +122,13 @@ def test_pipeline_delivers_anomalies_to_consumer():
         "2026-09-20T10:05:00",
         "2026-09-20T10:06:00",
     ]
+
+
+def test_pipeline_cli_prints_results():
+    output = StringIO()
+
+    with redirect_stdout(output):
+        runpy.run_path("src/aiops_pipeline.py", run_name="__main__")
+
+    assert "Records processed: 10" in output.getvalue()
+    assert "Events consumed: 2" in output.getvalue()

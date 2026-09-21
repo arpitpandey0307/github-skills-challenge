@@ -53,6 +53,14 @@ were processed, two anomalous observations were detected, two `ANOMALY` events w
 generated and published to the `service-events` topic, and both events were consumed
 and returned by the downstream AIOps pipeline.
 
+### Task 8: Run the Provided Validation
+
+**Result:** The provided validation completed successfully after adding focused tests
+for the existing error branches, topic cleanup, empty-event handling, and CLI output.
+The full suite passed 15 tests, coverage reached 96%, and the 90% coverage gate
+passed. The end-to-end workflow also completed with 10 records processed, 2 anomalies
+detected, and 2 events consumed.
+
 ## AIOps Assessment
 
 This repository monitors a synthetic `payment-service`. The service processes payment
@@ -170,6 +178,32 @@ Events consumed: 2
 The final output represents the payment-service issues at `10:05` and `10:06`,
 including the elevated response time, resource utilization, and concerning error logs.
 
+### Task 8 Validation Record
+
+Commands executed:
+
+```bash
+python -m pytest -q
+python -m pytest --cov=src --verbose
+coverage report --fail-under=90
+PYTHONPATH=src python src/aiops_pipeline.py
+```
+
+Validation results:
+
+```text
+15 passed
+TOTAL coverage: 96%
+Coverage failure threshold: passed (90%)
+Records processed: 10
+Anomalies detected: 2
+Events consumed: 2
+```
+
+The validation confirms that operational data is processed, abnormal behavior is
+detected, anomaly events are generated and published, the consumer receives them,
+and the final AIOps workflow completes successfully.
+
 ### Reproduce the Demonstration
 
 From the repository root, use Python 3.13 or a compatible Python 3 version:
@@ -206,9 +240,6 @@ From the repository root, use Python 3.13 or a compatible Python 3 version:
 	events consumed. The anomaly timestamps should be `10:05` and `10:06`, with the
 	response-time, CPU, memory, and `Error log detected` reasons shown above.
 
-The corrections made during the assessment are preserved in the existing architecture:
-the producer and consumer share the `service-events` topic, and the detector treats
-both `ERROR` and `WARNING` as concerning log levels.
 
 
 ---
