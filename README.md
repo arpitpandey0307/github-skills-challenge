@@ -67,6 +67,31 @@ monitoring or response processes.
 	database connection timeout. These exceed the detector thresholds of `500 ms` for
 	response time and `80%` for CPU and memory.
 
+### Detection Report
+
+Running [src/aiops_pipeline.py](src/aiops_pipeline.py) with
+[data/service_data.json](data/service_data.json) processes all 10 records and produces
+two anomaly events:
+
+| Timestamp | Log information | Metric values | Detection reasons |
+| --- | --- | --- | --- |
+| `2026-09-20T10:05:00` | `ERROR`: Payment service timeout | `610 ms`, CPU `75%`, memory `70%` | High response time |
+| `2026-09-20T10:06:00` | `ERROR`: Database connection timeout | `640 ms`, CPU `94%`, memory `91%` | High response time; high CPU utilization; high memory utilization |
+
+The remaining eight observations are treated as normal, and no normal event is
+incorrectly flagged by the configured metric thresholds. The two timeout records are
+still concerning log events, but both `ERROR` log levels are absent from the reported
+reasons because the detector currently adds a log reason only for `WARNING`. This is
+an expected anomaly that the current implementation misses at the log-classification
+level.
+
+The pipeline also reports zero consumed events because it publishes to the
+`service-events` topic while the consumer reads from the separate `anomaly-events`
+topic. A possible improvement is to use one shared anomaly topic and to treat
+`ERROR` (as well as `WARNING`, if appropriate) as a concerning log level. Another
+improvement would be to include the original log level and message directly in the
+detected event reasons or output.
+
 
 ---
 
