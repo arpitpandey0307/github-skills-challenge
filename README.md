@@ -46,6 +46,13 @@ reported 10 records processed, 2 anomalies detected, 2 events consumed, and the 
 reason on both anomaly events. The shared-topic correction from Task 4 remains in
 place, so the complete event flow continues to work.
 
+### Task 6: Execute the End-to-End Pipeline
+
+**Result:** The complete workflow was executed successfully. Ten operational records
+were processed, two anomalous observations were detected, two `ANOMALY` events were
+generated and published to the `service-events` topic, and both events were consumed
+and returned by the downstream AIOps pipeline.
+
 ## AIOps Assessment
 
 This repository monitors a synthetic `payment-service`. The service processes payment
@@ -142,6 +149,28 @@ The complete event-processing flow is:
 Running the pipeline against the operational data processed 10 records, detected 2
 anomalies, and consumed 2 events. The consumed events correspond to `10:05` and
 `10:06`, confirming that both abnormal observations reached the downstream result.
+
+### End-to-End Execution Record
+
+The verified Task 6 flow was:
+
+`data/service_data.json` → `AnomalyDetector` → `ANOMALY` event → `EventProducer` →
+`service-events` topic → `EventConsumer` → `events_consumed` AIOps output.
+
+Execution output:
+
+```text
+Records processed: 10
+Anomalies detected: 2
+Events consumed: 2
+2026-09-20T10:05:00 ANOMALY payment-service
+	High response time, Error log detected
+2026-09-20T10:06:00 ANOMALY payment-service
+	High response time, High CPU utilization, High memory utilization, Error log detected
+```
+
+The final output represents the payment-service issues at `10:05` and `10:06`,
+including the elevated response time, resource utilization, and concerning error logs.
 
 
 ---
